@@ -2,7 +2,19 @@
 
 I review every phase against this. Any score ≤3 → fix before shipping.
 
-## The brief's anti-slop rules (from REBUILD-BRIEF.md §0)
+## v2 build status (2026-06-18)
+
+All 6 brief phases shipped in one file (~21KB, vanilla, single index.html):
+- Phase 1: light system — single `--dawn` property, sky gradient, warm overlay, stars, sun
+- Phase 2: horizon roses — simple bezier petals, 7 staggered blooms
+- Phase 3: three hold interactions + blur-in prompts (`hold.` → `again.` → nothing)
+- Phase 4: jaguar constellation (faint, upper sky)
+- Phase 5: final reveal — message placeholder for Umar, soft bassline fade-in
+- Phase 6: reduced-motion + keyboard (Space/Enter) + touch + skip button
+
+Live: https://k1ng0mar.github.io/sev-graduation/
+
+## Hard rules from brief §0 (still enforced)
 
 Hard rules I must NOT violate (each one is a real failure of the previous build):
 - [ ] NOT a checklist of symbols literally depicted (no "plant a rose" / "pet a jaguar" / "match cards" / "catch leaves" minigames)

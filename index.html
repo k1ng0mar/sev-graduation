@@ -228,7 +228,7 @@ body {
 /* As --dawn rises, the name blurs out and fades */
 .name {
   filter: blur(calc(18px * var(--dawn)));
-  opacity: calc(1 - var(--dawn) * 0.4);
+  opacity: calc(1 - var(--dawn) * 0.7);
 }
 
 /* ============ BLUR-IN PROMPTS ============ */
@@ -295,6 +295,33 @@ body {
   color: var(--c-rose-dp);
 }
 
+/* ============ SKIP (unobtrusive, jumps to full dawn) ============ */
+.skip-btn {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 20;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 246, 240, 0.4);
+  background: none;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: color 0.3s;
+  opacity: 0;
+  pointer-events: none;
+}
+.skip-btn.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.skip-btn:hover {
+  color: rgba(255, 246, 240, 0.8);
+}
+
 /* ============ A11Y: SR-only ============ */
 .sr-only {
   position: absolute;
@@ -339,6 +366,8 @@ body {
     <p class="message" id="umar-message">[ YOUR MESSAGE GOES HERE ]</p>
   </div>
 </div>
+
+<button class="skip-btn" id="skip-btn" aria-label="Skip to full sunrise">skip</button>
 
 <div id="announcer" aria-live="polite" class="sr-only"></div>
 
@@ -568,6 +597,34 @@ body {
       announce('Hold to let the light in');
     }
   }, 2200);
+
+  // ============ SKIP BUTTON ============
+  // Appears after 5s, lets users jump to full dawn
+  setTimeout(function() {
+    document.getElementById('skip-btn').classList.add('show');
+  }, 5000);
+  function skipToFull() {
+    // Animate --dawn to 1 over 3s, trigger all stage transitions
+    const startDawn = dawn;
+    const startTime = performance.now();
+    const duration = 3000;
+    function skipTick() {
+      const t = (performance.now() - startTime) / duration;
+      if (t >= 1) {
+        setDawn(1);
+        return;
+      }
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDawn(startDawn + (1 - startDawn) * eased);
+      requestAnimationFrame(skipTick);
+    }
+    // Unlock audio
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    skipTick();
+  }
+  document.getElementById('skip-btn').addEventListener('click', skipToFull);
 
   // ============ INPUT BINDINGS ============
   // Mouse
