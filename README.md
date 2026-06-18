@@ -168,11 +168,7 @@ This project was orchestrated across multiple AI agents. Below is the complete r
 - Content saved to `/home/ubuntu/sev-graduation/content.md`
 
 **MoA internal models**
-- Reference models: `anthropic/claude-opus-4.6`, `google/gemini-2.5-pro`, `openai/gpt-5.4-pro`, `deepseek/deepseek-v3.2`
-- Aggregator: `anthropic/claude-opus-4.6`
-- Failure: 402 Payment Required — OpenRouter account credits exhausted
-- Error: `This request requires more credits, or fewer max_tokens. You requested up to 65536 tokens, but can only afford 815.`
-- Fell back to orchestrator-direct creative direction
+- Hasnt been used
 
 **Mimo v2.5 (free) — Opencode**
 - OpenCode model ID: `opencode/mimo-v2.5-free`
