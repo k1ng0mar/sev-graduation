@@ -65,6 +65,51 @@ body {
   transform: translateY(calc(50vh * (1 - var(--dawn))));
   opacity: calc(0.2 + 0.8 * var(--dawn));
 }
+#stage-1 .invitation {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center; max-width: min(36ch, 88vw);
+  opacity: 0; filter: blur(14px);
+  pointer-events: none;
+  z-index: 5;
+}
+#stage-1 .invitation.show { animation: invIn 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#stage-1 .invitation.fade { animation: invOut 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+@keyframes invIn {
+  0% { opacity: 0; filter: blur(14px); transform: translate(-50%, -45%); }
+  100% { opacity: 1; filter: blur(0); transform: translate(-50%, -50%); }
+}
+@keyframes invOut {
+  0% { opacity: 1; filter: blur(0); transform: translate(-50%, -50%); }
+  100% { opacity: 0; filter: blur(8px); transform: translate(-50%, -55%); }
+}
+#stage-1 .invitation .line {
+  font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+  line-height: 1.7; color: var(--warm-white);
+  text-shadow: 0 0 30px rgba(36,16,36,0.8);
+  display: block;
+  opacity: 0; filter: blur(12px);
+}
+#stage-1 .invitation .line.show { animation: lineIn 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes lineIn {
+  0% { opacity: 0; filter: blur(12px); transform: translateY(8px); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+#stage-1 .invitation .line.emphasis {
+  font-weight: 400; font-style: normal;
+  color: var(--c-gold);
+  text-shadow: 0 0 40px rgba(247,212,155,0.5);
+  margin-top: 0.6em; font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+}
+#stage-1 .invitation .deco {
+  width: 40px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--c-gold), transparent);
+  margin: 1.2em auto 0.8em;
+  opacity: 0;
+}
+#stage-1 .invitation .deco.show { animation: decoIn 1.4s ease 0.8s forwards; }
+@keyframes decoIn { 0% { opacity: 0; width: 0; } 100% { opacity: 0.5; width: 40px; } }
 #stage-1 .name-s1 {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
@@ -283,8 +328,13 @@ body {
   <div class="stars" id="stars-s1"></div>
   <div class="constellation" id="constellation-s1"></div>
   <div class="sun"></div>
-  <h1 class="name-s1" id="name-s1">Sev</h1>
-  <p class="prompt-s1" id="prompt-s1">hold.</p>
+  <div class="invitation" id="invitation">
+    <span class="line" id="inv-1">Hello there, weary traveler,</span>
+    <span class="line deco" id="inv-deco"></span>
+    <span class="line" id="inv-2">you have completed this chapter.</span>
+    <span class="line emphasis" id="inv-3">Adventure awaits.</span>
+  </div>
+  <p class="prompt-s1" id="prompt-s1">begin.</p>
 </div>
 
 <!-- STAGE 2: GARDEN — plant 3 roses -->
@@ -409,8 +459,22 @@ body {
     eyes.forEach(p => { svg += '<circle class="pt" cx="' + p.x + '" cy="' + p.y + '" r="0.5" opacity="0.9"/>'; });
     svg += '</svg>';
     c.innerHTML = svg;
-    // Show "hold." after name settles
-    setTimeout(() => { if (currentStage === 0) showPrompt('prompt-s1'); }, 2200);
+    // Page load choreography: invitation lines blur in one at a time
+    // Night sky settles → stars → invitation begins
+    setTimeout(() => {
+      document.getElementById('invitation').classList.add('show');
+      setTimeout(() => document.getElementById('inv-1').classList.add('show'), 600);
+      setTimeout(() => document.getElementById('inv-deco').classList.add('show'), 1400);
+      setTimeout(() => document.getElementById('inv-2').classList.add('show'), 2000);
+      setTimeout(() => document.getElementById('inv-3').classList.add('show'), 2800);
+      // After the invitation settles, fade it and show "begin."
+      setTimeout(() => {
+        document.getElementById('invitation').classList.add('fade');
+        setTimeout(() => {
+          if (currentStage === 0) showPrompt('prompt-s1');
+        }, 800);
+      }, 5500);
+    }, 800);
   }
 
   function s1HoldStart() {
