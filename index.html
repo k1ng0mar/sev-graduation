@@ -60,11 +60,7 @@ body {
 }
 #stage-1 .stars { position: absolute; inset: 0; opacity: calc(1 - var(--dawn)); }
 #stage-1 .star { position: absolute; border-radius: 50%; background: var(--warm-white); box-shadow: 0 0 3px rgba(232, 224, 200, 0.6); }
-#stage-1 .constellation { position: absolute; inset: 0; opacity: calc((1 - var(--dawn)) * 0.6); }
-#stage-1 .constellation svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-#stage-1 .constellation .pt { fill: var(--warm-white); }
-#stage-1 .constellation .pt.spine { fill: var(--c-gold); opacity: 0.8; }
-#stage-1 .constellation .ln { stroke: var(--warm-white); stroke-width: 0.4; fill: none; opacity: 0.3; }
+#stage-1 .constellation { position: absolute; inset: 0; opacity: calc((1 - var(--dawn)) * 0.7); pointer-events: none; }
 #stage-1 .sun {
   position: absolute; left: 50%; top: 50%;
   width: 360px; height: 360px; margin-left: -180px; margin-top: -180px;
@@ -75,15 +71,7 @@ body {
   opacity: calc(0.15 + 0.85 * var(--dawn));
   box-shadow: 0 0 80px rgba(232, 194, 133, 0.6), 0 0 160px rgba(232, 194, 133, 0.3);
 }
-#stage-1 .constellation .pt.eye {
-  fill: var(--c-gold);
-  filter: drop-shadow(0 0 4px rgba(232, 194, 133, 0.9)) drop-shadow(0 0 10px rgba(232, 194, 133, 0.5));
-  animation: eyePulse 2.6s ease-in-out infinite;
-}
-@keyframes eyePulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
+/* panther.svg handles its own eye styling internally */
 #stage-1 .invitation {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
@@ -237,15 +225,15 @@ body {
 }
 #stage-3 .autumn-tree {
   position: absolute;
-  right: -15%;
+  right: -25%;
   bottom: 0;
-  width: 60%;
-  height: 80%;
-  z-index: 2;
-  pointer-events: none;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 600' preserveAspectRatio='xMidYMax meet'%3E%3C!-- trunk --%3E%3Cpath d='M280 600 L285 400 Q283 350 290 300 Q295 250 288 200 L285 120' stroke='%233d2a1a' stroke-width='14' fill='none' stroke-linecap='round'/%3E%3C!-- main branches --%3E%3Cpath d='M285 280 Q250 260 210 250 Q180 245 150 240' stroke='%233d2a1a' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3Cpath d='M287 220 Q320 200 350 190 Q380 185 395 185' stroke='%233d2a1a' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3Cpath d='M286 160 Q260 140 230 130 Q200 125 175 125' stroke='%233d2a1a' stroke-width='6' fill='none' stroke-linecap='round'/%3E%3Cpath d='M285 120 Q300 100 320 90 Q340 85 355 85' stroke='%233d2a1a' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3C!-- sub-branches --%3E%3Cpath d='M210 250 Q190 235 170 230' stroke='%233d2a1a' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3Cpath d='M150 240 Q130 230 110 235' stroke='%233d2a1a' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M350 190 Q370 175 385 170' stroke='%233d2a1a' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3Cpath d='M230 130 Q210 115 195 110' stroke='%233d2a1a' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M175 125 Q155 115 140 118' stroke='%233d2a1a' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C!-- foliage clusters (sparse, autumn) --%3E%3Cellipse cx='160' cy='235' rx='35' ry='28' fill='%23b85a20' opacity='0.6'/%3E%3Cellipse cx='110' cy='232' rx='30' ry='24' fill='%23d4742a' opacity='0.5'/%3E%3Cellipse cx='200' cy='245' rx='28' ry='22' fill='%23c4651a' opacity='0.5'/%3E%3Cellipse cx='370' cy='185' rx='30' ry='25' fill='%23b85a20' opacity='0.5'/%3E%3Cellipse cx='390' cy='175' rx='25' ry='20' fill='%23d4742a' opacity='0.4'/%3E%3Cellipse cx='210' cy='125' rx='28' ry='22' fill='%23c4651a' opacity='0.5'/%3E%3Cellipse cx='145' cy='120' rx='25' ry='20' fill='%23b85a20' opacity='0.4'/%3E%3Cellipse cx='330' cy='88' rx='25' ry='20' fill='%23d4742a' opacity='0.5'/%3E%3Cellipse cx='355' cy='82' rx='22' ry='18' fill='%23c4651a' opacity='0.4'/%3E%3Cellipse cx='275' cy='100' rx='30' ry='25' fill='%23b85a20' opacity='0.45'/%3E%3C/svg%3E") no-repeat bottom right;
-  background-size: contain;
-  opacity: 0.85;
+  width: 55%;
+  height: 85%;
+  object-fit: contain;
+  object-position: bottom right;
+  z-index: 1;
+  filter: sepia(0.3) saturate(1.4) hue-rotate(-10deg) brightness(0.85);
+  opacity: 0.9;
 }
 #stage-3 .stage-prompt {
   position: absolute; top: 12%; left: 50%; transform: translateX(-50%);
@@ -470,7 +458,7 @@ body {
 <div class="stage active" id="stage-1">
   <div class="warm-layer"></div>
   <div class="stars" id="stars-s1"></div>
-  <div class="constellation" id="constellation-s1"></div>
+  <object class="constellation" id="constellation-s1" data="panther.svg" type="image/svg+xml"></object>
   <div class="sun"></div>
   <div class="invitation" id="invitation">
     <span class="line" id="inv-1">Hello there, weary traveler,</span>
@@ -493,7 +481,7 @@ body {
 <!-- STAGE 3: AUTUMN — catch falling leaves -->
 <div class="stage" id="stage-3">
   <div class="autumn-sun"></div>
-  <div class="autumn-tree"></div>
+  <img class="autumn-tree" id="autumn-tree-img" src="tree.svg" alt="Autumn tree">
   <p class="stage-prompt" id="prompt-s3">catch what falls.</p>
   <div class="leaf-msg" id="leaf-msg"></div>
 </div>
@@ -672,76 +660,8 @@ body {
       s.style.opacity = 0.25 + Math.random() * 0.7;
       container.appendChild(s);
     }
-    // Jaguar constellation — stalking pose, facing left (like reference)
-    const c = document.getElementById('constellation-s1');
-    const pts = [
-      // Head (facing left)
-      { x: 6, y: 40 },   // 0: nose tip
-      { x: 10, y: 35 },  // 1: brow ridge
-      { x: 13, y: 27 },  // 2: ear front
-      { x: 17, y: 23 },  // 3: ear tip
-      { x: 21, y: 28 },  // 4: ear back
-      { x: 24, y: 30 },  // 5: crown
-      { x: 28, y: 32 },  // 6: neck crest
-      // Back (slightly arched)
-      { x: 34, y: 33 },  // 7: withers
-      { x: 45, y: 34 },  // 8: back mid
-      { x: 57, y: 35 },  // 9: back hip
-      // Hindquarters (crouched)
-      { x: 65, y: 33 },  // 10: haunch top
-      { x: 71, y: 38 },  // 11: haunch curve
-      // Tail (curving down and back)
-      { x: 73, y: 37 },  // 12: tail base
-      { x: 80, y: 43 },  // 13: tail mid
-      { x: 85, y: 51 },  // 14: tail low
-      { x: 82, y: 59 },  // 15: tail tip
-      // Back leg (crouched)
-      { x: 69, y: 48 },  // 16: back knee
-      { x: 67, y: 56 },  // 17: back ankle
-      { x: 63, y: 62 },  // 18: back paw
-      // Belly
-      { x: 54, y: 50 },  // 19: belly back
-      { x: 41, y: 50 },  // 20: belly mid
-      { x: 31, y: 48 },  // 21: belly front
-      // Front leg (extended forward)
-      { x: 29, y: 54 },  // 22: front knee
-      { x: 27, y: 60 },  // 23: front ankle
-      { x: 23, y: 64 },  // 24: front paw
-      // Chest and jaw
-      { x: 21, y: 46 },  // 25: chest
-      { x: 17, y: 44 },  // 26: jaw
-      { x: 11, y: 45 }   // 27: chin
-    ];
-    const eyes = [
-      { x: 12, y: 36 }, // eye 1 (front)
-      { x: 17, y: 35 }  // eye 2 (back)
-    ];
-    // Lines tracing the stalking jaguar silhouette
-    const lines = [
-      [0,1],[1,2],[2,3],[3,4],[4,5],[5,6],     // head: nose→brow→ear→crown→neck
-      [6,7],[7,8],[8,9],[9,10],[10,11],          // back: neck→withers→mid→hip→haunch
-      [11,12],[12,13],[13,14],[14,15],            // tail: haunch→base→mid→low→tip
-      [11,16],[16,17],[17,18],                    // back leg: haunch→knee→ankle→paw
-      [18,19],[19,20],[20,21],                    // belly: paw→belly back→mid→front
-      [21,22],[22,23],[23,24],                    // front leg: belly→knee→ankle→paw
-      [24,25],[25,26],[26,27],[27,0]              // chest/jaw: paw→chest→jaw→chin→nose
-    ];
-    const bodyLen = pts.length;
-    let svg = '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">';
-    lines.forEach(function(pair) {
-      const a = pair[0], b = pair[1];
-      const pa = a < bodyLen ? pts[a] : eyes[a - bodyLen];
-      const pb = b < bodyLen ? pts[b] : eyes[b - bodyLen];
-      svg += '<line class="ln" x1="' + pa.x + '" y1="' + pa.y + '" x2="' + pb.x + '" y2="' + pb.y + '"/>';
-    });
-    // Main body stars
-    pts.forEach(function(p) { svg += '<circle class="pt" cx="' + p.x + '" cy="' + p.y + '" r="0.5"/>'; });
-    // Spine stars (slightly larger for emphasis)
-    [7,8,9,10].forEach(function(i) { svg += '<circle class="pt spine" cx="' + pts[i].x + '" cy="' + pts[i].y + '" r="0.8"/>'; });
-    // Eyes (prominent gold)
-    eyes.forEach(function(p) { svg += '<circle class="pt eye" cx="' + p.x + '" cy="' + p.y + '" r="0.9"/>'; });
-    svg += '</svg>';
-    c.innerHTML = svg;
+    // Panther constellation loaded via <object> tag from panther.svg
+    // No manual SVG generation needed — the file has its own stars, lines, and animations
     // Page load choreography: invitation lines blur in one at a time
     // Night sky settles → stars → invitation begins
     setTimeout(() => {
@@ -1044,12 +964,8 @@ body {
       if (e.touches.length > 0) s2StartGrowing(e.touches[0].clientX);
     }, { passive: true });
     // Stop growing on release (anywhere on document)
-    document.addEventListener('mouseup', function() {
-      if (currentStage === 1) s2StopGrowing();
-    });
-    document.addEventListener('touchend', function() {
-      if (currentStage === 1) s2StopGrowing();
-    });
+    document.addEventListener('mouseup', s2StopGrowing);
+    document.addEventListener('touchend', s2StopGrowing);
     setTimeout(() => { if (currentStage === 1) showPrompt('prompt-s2'); }, 1200);
   }
 
@@ -1210,7 +1126,7 @@ body {
     setTimeout(() => {
       document.getElementById('vinyl-disc-group').classList.add('spinning');
       // Try to play audio file if it exists
-      s5Audio = new Audio('song.mp3');
+      s5Audio = new Audio('Song.mp3');
       s5Audio.volume = 0;
       s5Audio.loop = true;
       s5Audio.play().then(() => {
