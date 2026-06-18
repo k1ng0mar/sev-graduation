@@ -8,366 +8,312 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-/* ============ TOKENS — brief §3 ============ */
 :root {
-  --c-night:    #241024;
-  --c-dusk:     #3d1a3a;
-  --c-mulberry: #5e2347;
-  --c-rose-dp:  #9b2d4e;
-  --c-rose:     #b5546e;
-  --c-coral:    #e08a7d;
-  --c-peach:    #f2b48a;
-  --c-gold:     #f7d49b;
-  --c-cream:    #fdf2ec;
-  --ink:        #3a1c2a;
-  --warm-white: #fff6f0;
-  --stem:       #6e7d54;
+  --c-night: #241024; --c-dusk: #3d1a3a; --c-mulberry: #5e2347;
+  --c-rose-dp: #9b2d4e; --c-rose: #b5546e; --c-coral: #e08a7d;
+  --c-peach: #f2b48a; --c-gold: #f7d49b; --c-cream: #fdf2ec;
+  --ink: #3a1c2a; --warm-white: #fff6f0; --stem: #6e7d54;
   --dawn: 0;
 }
+@property --dawn { syntax: '<number>'; inherits: true; initial-value: 0; }
 
-@property --dawn {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 0;
-}
-
-/* ============ BASE ============ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; overflow: hidden; }
 body {
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 300;
   background: var(--c-night);
-  color: var(--warm-white);
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  user-select: none;
-  -webkit-user-select: none;
+  user-select: none; -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
-  cursor: pointer;
 }
 
-/* ============ SKY: fixed night gradient (never changes) ============ */
-.sky {
-  position: fixed; inset: 0; z-index: 0;
-  background: linear-gradient(180deg,
-    var(--c-night) 0%,
-    var(--c-dusk) 30%,
-    var(--c-mulberry) 60%,
-    #6b2a52 85%,
-    var(--c-rose) 100%);
+/* ============ STAGE SYSTEM ============ */
+.stage {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  opacity: 0; visibility: hidden;
+  transition: opacity 2.2s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 2.2s;
+  overflow: hidden;
 }
+.stage.active { opacity: 1; visibility: visible; transition: opacity 2.2s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s; }
 
-/* ============ WARM OVERLAY: the sunrise ============ */
-.warm {
-  position: fixed; inset: 0; z-index: 1;
-  pointer-events: none;
+/* ============ STAGE 1: DAWN (the coax) ============ */
+#stage-1 { background: linear-gradient(180deg, var(--c-night) 0%, var(--c-dusk) 30%, var(--c-mulberry) 70%, #6b2a52 90%, var(--c-rose) 100%); }
+#stage-1 .warm-layer {
+  position: absolute; inset: 0;
   opacity: var(--dawn);
   background:
-    radial-gradient(60% 35% at 50% 55%,
-      rgba(255, 250, 230, 1) 0%,
-      rgba(247, 212, 155, 0.8) 25%,
-      transparent 60%),
-    radial-gradient(100% 60% at 50% 60%,
-      rgba(247, 212, 155, 0.6) 0%,
-      transparent 70%),
-    radial-gradient(120% 80% at 50% 40%,
-      rgba(242, 180, 138, 0.4) 0%,
-      transparent 65%),
-    linear-gradient(180deg,
-      #8a3a5e 0%,
-      var(--c-rose) 20%,
-      var(--c-coral) 50%,
-      var(--c-peach) 80%,
-      var(--c-gold) 100%);
+    radial-gradient(60% 35% at 50% 55%, rgba(255,250,230,1) 0%, transparent 60%),
+    radial-gradient(100% 60% at 50% 60%, rgba(247,212,155,0.6) 0%, transparent 70%),
+    linear-gradient(180deg, #8a3a5e 0%, var(--c-rose) 20%, var(--c-coral) 50%, var(--c-peach) 80%, var(--c-gold) 100%);
 }
-
-/* ============ STARS (fade as dawn rises) ============ */
-.stars {
-  position: fixed; inset: 0; z-index: 2;
-  pointer-events: none;
-  opacity: calc(1 - var(--dawn));
-}
-.star {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--warm-white);
-  box-shadow: 0 0 3px rgba(255, 246, 240, 0.6);
-}
-
-/* ============ JAGUAR CONSTELLATION (faint, in the night sky) ============ */
-.constellation {
-  position: fixed; inset: 0; z-index: 2;
-  pointer-events: none;
-  opacity: calc((1 - var(--dawn)) * 0.7);
-}
-.constellation svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.constellation .star-dot {
-  fill: var(--warm-white);
-}
-.constellation .star-line {
-  stroke: var(--warm-white);
-  stroke-width: 0.5;
-  fill: none;
-  opacity: 0.3;
-}
-
-/* ============ SUN (rises from below horizon) ============ */
-.sun {
-  position: fixed;
-  left: 50%;
-  top: 55%;
-  width: 360px;
-  height: 360px;
-  margin-left: -180px;
-  margin-top: -180px;
-  z-index: 3;
-  border-radius: 50%;
-  pointer-events: none;
-  background: radial-gradient(circle,
-    rgba(255, 252, 240, 1) 0%,
-    rgba(255, 235, 190, 0.95) 25%,
-    rgba(247, 212, 155, 0.7) 45%,
-    rgba(242, 180, 138, 0.35) 65%,
-    transparent 85%);
+#stage-1 .stars { position: absolute; inset: 0; opacity: calc(1 - var(--dawn)); }
+#stage-1 .star { position: absolute; border-radius: 50%; background: var(--warm-white); box-shadow: 0 0 3px rgba(255,246,240,0.6); }
+#stage-1 .constellation { position: absolute; inset: 0; opacity: calc((1 - var(--dawn)) * 0.6); }
+#stage-1 .constellation svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#stage-1 .constellation .pt { fill: var(--warm-white); }
+#stage-1 .constellation .ln { stroke: var(--warm-white); stroke-width: 0.4; fill: none; opacity: 0.3; }
+#stage-1 .sun {
+  position: absolute; left: 50%; top: 50%;
+  width: 320px; height: 320px; margin-left: -160px; margin-top: -160px;
+  border-radius: 50%; z-index: 3;
+  background: radial-gradient(circle, rgba(255,252,240,1) 0%, rgba(247,212,155,0.7) 45%, transparent 85%);
   filter: blur(3px);
-  transform: translateY(calc(60vh * (1 - var(--dawn))));
-  opacity: calc(0.15 + 0.85 * var(--dawn));
+  transform: translateY(calc(50vh * (1 - var(--dawn))));
+  opacity: calc(0.2 + 0.8 * var(--dawn));
 }
-
-/* ============ HORIZON ROSES (simple bezier petals) ============ */
-.horizon-roses {
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  height: 40%;
-  z-index: 4;
-  pointer-events: none;
-}
-.horizon-rose {
-  position: absolute;
-  bottom: 6%;
-  width: 160px;
-  height: 160px;
-  transform: translateX(-50%);
-  opacity: clamp(0, calc((var(--dawn) - var(--start-dawn)) / 0.15), 1);
-}
-.horizon-rose svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.horizon-rose .rose-path {
-  fill: var(--c-rose-dp);
-  fill-opacity: 0.5;
-  stroke: var(--c-night);
-  stroke-width: 0.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: var(--len);
-  stroke-dashoffset: var(--len);
-  transition: stroke-dashoffset 2.5s cubic-bezier(0.22, 1, 0.36, 1), fill-opacity 2s ease 1s;
-}
-.horizon-rose.bloomed .rose-path {
-  stroke-dashoffset: 0;
-  fill-opacity: 0.6;
-}
-.horizon-rose .rose-center {
-  fill: var(--c-night);
-  opacity: 0;
-  transition: opacity 1.2s ease 1.2s;
-}
-.horizon-rose.bloomed .rose-center {
-  opacity: 0.7;
-}
-
-/* ============ TEXT LAYER (prompts + message) ============ */
-.text-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  pointer-events: none;
-  text-align: center;
-  padding: 2rem;
-}
-.text-layer > * {
-  pointer-events: auto;
-}
-
-.name {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+#stage-1 .name-s1 {
+  position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  font-family: 'Fraunces', 'Cormorant Garamond', Georgia, serif;
-  font-style: italic;
-  font-weight: 300;
+  font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
   font-size: clamp(5rem, 16vw, 11rem);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  color: var(--warm-white);
-  white-space: nowrap;
-  opacity: 0;
-  filter: blur(16px);
-  text-shadow: 0 0 60px rgba(247, 212, 155, calc(var(--dawn) * 0.3));
-  pointer-events: none;
-  animation: nameIn 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+  letter-spacing: -0.02em; color: var(--warm-white);
+  white-space: nowrap; pointer-events: none;
+  filter: blur(calc(20px * var(--dawn)));
+  opacity: calc(1 - var(--dawn) * 0.8);
+  animation: nameBlurIn 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
 }
-@keyframes nameIn {
-  0% { opacity: 0; filter: blur(16px); transform: translate(-50%, -50%); }
-  100% { opacity: 1; filter: blur(0); transform: translate(-50%, -50%); }
+@keyframes nameBlurIn { 0% { opacity: 0; filter: blur(16px); transform: translate(-50%, -50%); } 100% { opacity: 1; filter: blur(0); transform: translate(-50%, -50%); } }
+.prompt-s1 {
+  position: absolute; bottom: 15%; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  color: var(--warm-white); white-space: nowrap;
+  opacity: 0; filter: blur(14px);
+  text-shadow: 0 0 30px rgba(36,16,36,0.7);
 }
-/* As --dawn rises, the name blurs out and fades */
-.name {
-  filter: blur(calc(18px * var(--dawn)));
-  opacity: calc(1 - var(--dawn) * 0.7);
-}
+.prompt-s1.show { animation: blurIn 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.prompt-s1.fade { animation: blurOut 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 
-/* ============ BLUR-IN PROMPTS ============ */
-.prompt {
-  font-family: 'Fraunces', serif;
-  font-style: italic;
-  font-weight: 300;
-  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
-  letter-spacing: 0.02em;
-  color: var(--warm-white);
-  opacity: 0;
-  filter: blur(14px);
-  transform: translateY(18px);
-  position: absolute;
-  bottom: 18%;
-  left: 50%;
-  transform: translate(-50%, 18px);
-  white-space: nowrap;
-  text-shadow: 0 0 30px rgba(36, 16, 36, 0.6);
+/* ============ STAGE 2: GARDEN (plant roses) ============ */
+#stage-2 {
+  background: linear-gradient(180deg, #c97a7a 0%, #d8918a 30%, #e0a89e 60%, #e8bcb0 100%);
 }
-.prompt.show {
-  animation: blurIn 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+#stage-2 .garden-light {
+  position: absolute; inset: 0;
+  background: radial-gradient(80% 50% at 50% 30%, rgba(255,240,200,0.4) 0%, transparent 60%);
 }
-.prompt.fade-out {
-  animation: blurOut 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+#stage-2 .stage-prompt {
+  position: absolute; top: 12%; left: 50%; transform: translateX(-50%);
+  font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  color: var(--ink); white-space: nowrap;
+  opacity: 0; filter: blur(12px);
+  text-shadow: 0 0 20px rgba(255,255,255,0.5);
 }
+#stage-2 .stage-prompt.show { animation: blurIn 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#stage-2 .stage-prompt.fade { animation: blurOut 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+#stage-2 .garden-ground {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 45%;
+  background: linear-gradient(180deg, transparent 0%, rgba(110, 80, 60, 0.15) 40%, rgba(110, 80, 60, 0.3) 100%);
+}
+#stage-2 .rose-row {
+  position: absolute; bottom: 18%; left: 0; right: 0;
+  display: flex; justify-content: center; align-items: flex-end;
+  gap: clamp(40px, 8vw, 120px);
+  padding: 0 10%;
+}
+#stage-2 .rose-slot {
+  position: relative; width: 100px; height: 200px;
+  cursor: pointer; display: flex; align-items: flex-end; justify-content: center;
+}
+#stage-2 .rose-slot svg { width: 100%; height: 100%; }
+#stage-2 .rose-bud {
+  opacity: 0.4; transform-origin: center bottom;
+  transition: opacity 0.6s ease, transform 2.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#stage-2 .rose-slot.planted .rose-bud { opacity: 1; transform: scale(1); }
+#stage-2 .rose-slot .rose-blooms { opacity: 0; transform: scale(0.5); transform-origin: center bottom; transition: opacity 1.2s ease 0.8s, transform 2s cubic-bezier(0.22, 1, 0.36, 1) 0.8s; }
+#stage-2 .rose-slot.planted .rose-blooms { opacity: 1; transform: scale(1); }
+#stage-2 .rose-slot.planted .rose-bud { opacity: 0; transform: scale(0.8) translateY(-10px); }
+#stage-2 .rose-slot::before {
+  content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(110, 80, 60, 0.3);
+}
+#stage-2 .rose-slot.planted::before { display: none; }
+#stage-2 .rose-hint {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  font-family: 'Fraunces', serif; font-style: italic; font-size: 0.8rem;
+  color: var(--ink); opacity: 0; white-space: nowrap;
+  transition: opacity 0.4s;
+}
+#stage-2 .rose-slot:not(.planted) .rose-hint { opacity: 0.4; }
+
+/* ============ STAGE 3: AUTUMN (catch leaves) ============ */
+#stage-3 {
+  background: linear-gradient(180deg, #c4854a 0%, #a85a2e 40%, #7a3a1c 100%);
+}
+#stage-3 .stage-prompt {
+  position: absolute; top: 12%; left: 50%; transform: translateX(-50%);
+  font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  color: var(--warm-white); white-space: nowrap;
+  opacity: 0; filter: blur(12px);
+  text-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+#stage-3 .stage-prompt.show { animation: blurIn 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#stage-3 .stage-prompt.fade { animation: blurOut 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+#stage-3 .leaf {
+  position: absolute; width: 36px; height: 36px; cursor: pointer; z-index: 5;
+  animation: leafFall linear forwards;
+}
+#stage-3 .leaf.caught { animation: leafCatch 0.6s ease forwards; pointer-events: none; }
+#stage-3 .leaf-msg {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-family: 'Fraunces', serif; font-style: italic; font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  color: var(--warm-white); text-align: center; max-width: 500px;
+  padding: 0 2rem; opacity: 0; pointer-events: none;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+}
+#stage-3 .leaf-msg.show { animation: msgShow 3.5s ease forwards; }
+
+/* ============ STAGE 4: MONACO (light the harbor) ============ */
+#stage-4 {
+  background: linear-gradient(180deg, #d4a574 0%, #c4854a 30%, #a05a30 70%, #6b2a52 100%);
+}
+#stage-4 .stage-prompt {
+  position: absolute; top: 12%; left: 50%; transform: translateX(-50%);
+  font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  color: var(--warm-white); white-space: nowrap;
+  opacity: 0; filter: blur(12px);
+  text-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+#stage-4 .stage-prompt.show { animation: blurIn 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#stage-4 .stage-prompt.fade { animation: blurOut 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+#stage-4 .harbor { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); width: 80%; max-width: 700px; }
+#stage-4 .harbor svg { width: 100%; height: auto; }
+#stage-4 .light-target {
+  fill: transparent; cursor: pointer; transition: fill 1.2s ease;
+}
+#stage-4 .light-target.lit { fill: rgba(255, 220, 140, 0.85); }
+#stage-4 .light-target.lit::before { content: ''; }
+
+/* ============ STAGE 5: REVEAL (typewriter message) ============ */
+#stage-5 {
+  background: linear-gradient(180deg, #e8b48a 0%, #f0c8a0 30%, #f5d8b8 60%, #f7e0c4 100%);
+}
+#stage-5 .sun-high {
+  position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 120px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,250,220,0.8) 0%, rgba(247,212,155,0.4) 50%, transparent 80%);
+  filter: blur(4px);
+}
+#stage-5 .message-wrap {
+  position: relative; z-index: 5; max-width: min(42ch, 90vw);
+  text-align: left; padding: 2rem;
+}
+#stage-5 .message-p {
+  font-family: 'Inter', sans-serif; font-weight: 300;
+  font-size: clamp(0.95rem, 1.8vw, 1.05rem);
+  line-height: 1.8; color: var(--ink);
+  margin-bottom: 1.4rem;
+  min-height: 1.8em;
+}
+#stage-5 .message-p.typing { color: var(--ink); }
+#stage-5 .cursor {
+  display: inline-block; width: 1px; height: 1em;
+  background: var(--ink); margin-left: 2px;
+  animation: blink 0.8s steps(2) infinite;
+  vertical-align: text-bottom;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+#stage-5 .continue-hint {
+  position: relative; margin-top: 2rem;
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: 0.9rem; color: var(--c-rose-dp);
+  opacity: 0; transition: opacity 0.6s ease;
+  text-align: center; cursor: pointer;
+}
+#stage-5 .continue-hint.show { opacity: 0.7; }
+#stage-5 .continue-hint.show:hover { opacity: 1; }
+#stage-5 .signature {
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+  color: var(--c-rose-dp);
+  margin-top: 3rem; text-align: center;
+  opacity: 0; filter: blur(8px);
+  transition: filter 1.2s ease, opacity 1.2s ease 0.3s;
+}
+#stage-5 .signature.show { opacity: 1; filter: blur(0); }
+
+/* ============ KEYFRAMES ============ */
 @keyframes blurIn {
-  0% { opacity: 0; filter: blur(14px); transform: translate(-50%, 18px); }
-  100% { opacity: 1; filter: blur(0); transform: translate(-50%, 0); }
+  0% { opacity: 0; filter: blur(14px); transform: translateX(-50%) translateY(18px); }
+  100% { opacity: 1; filter: blur(0); transform: translateX(-50%) translateY(0); }
 }
 @keyframes blurOut {
-  0% { opacity: 1; filter: blur(0); transform: translate(-50%, 0); }
-  100% { opacity: 0; filter: blur(10px); transform: translate(-50%, -10px); }
+  0% { opacity: 1; filter: blur(0); transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; filter: blur(10px); transform: translateX(-50%) translateY(-10px); }
+}
+@keyframes leafFall {
+  0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+}
+@keyframes leafCatch {
+  0% { transform: scale(1) rotate(0); opacity: 1; }
+  100% { transform: scale(2.5) translateY(-30px) rotate(180deg); opacity: 0; }
+}
+@keyframes msgShow {
+  0% { opacity: 0; transform: translate(-50%, -45%); }
+  15% { opacity: 1; transform: translate(-50%, -50%); }
+  85% { opacity: 1; transform: translate(-50%, -50%); }
+  100% { opacity: 0; transform: translate(-50%, -55%); }
 }
 
-/* ============ FINAL MESSAGE ============ */
-.message-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-width: min(38ch, 90vw);
-  text-align: center;
-  opacity: 0;
-  filter: blur(20px);
-}
-.message-container.show {
-  animation: messageIn 2.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-@keyframes messageIn {
-  0% { opacity: 0; filter: blur(20px); }
-  100% { opacity: 1; filter: blur(0); }
-}
-.message {
-  font-family: 'Inter', sans-serif;
-  font-weight: 300;
-  font-size: clamp(1rem, 2.2vw, 1.15rem);
-  line-height: 1.7;
-  color: var(--ink);
-  margin: 0;
-}
-.message em {
-  font-style: italic;
-  color: var(--c-rose-dp);
-}
-
-/* ============ SKIP (unobtrusive, jumps to full dawn) ============ */
-.skip-btn {
-  position: fixed;
-  top: 1.5rem;
-  right: 1.5rem;
-  z-index: 20;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255, 246, 240, 0.4);
-  background: none;
-  border: none;
-  padding: 0.5rem 0.75rem;
-  cursor: pointer;
-  transition: color 0.3s;
-  opacity: 0;
-  pointer-events: none;
-}
-.skip-btn.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-.skip-btn:hover {
-  color: rgba(255, 246, 240, 0.8);
-}
-
-/* ============ A11Y: SR-only ============ */
-.sr-only {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-:focus-visible {
-  outline: 2px solid var(--c-gold);
-  outline-offset: 4px;
-}
-
-/* ============ REDUCED MOTION ============ */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.4s !important;
-  }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.5s !important; }
 }
 </style>
 </head>
 <body>
 
-<div class="sky"></div>
-<div class="warm"></div>
-<div class="stars" id="stars"></div>
-<div class="constellation" id="constellation"></div>
-<div class="sun"></div>
-<div class="horizon-roses" id="horizon-roses"></div>
-
-<div class="text-layer">
-  <h1 class="name" id="name">Sev</h1>
-  <p class="prompt" id="prompt-hold">hold.</p>
-  <p class="prompt" id="prompt-again">again.</p>
-  <div class="message-container" id="message-container">
-    <!-- UMAR: replace this entire block with your real words to Sev.
-         One specific shared memory beats ten metaphors. Keep it short.
-         Do NOT let any model fill this in. -->
-    <p class="message" id="umar-message">[ YOUR MESSAGE GOES HERE ]</p>
-  </div>
+<!-- STAGE 1: DAWN — hold to coax the sun up -->
+<div class="stage active" id="stage-1">
+  <div class="warm-layer"></div>
+  <div class="stars" id="stars-s1"></div>
+  <div class="constellation" id="constellation-s1"></div>
+  <div class="sun"></div>
+  <h1 class="name-s1" id="name-s1">Sev</h1>
+  <p class="prompt-s1" id="prompt-s1">hold.</p>
 </div>
 
-<button class="skip-btn" id="skip-btn" aria-label="Skip to full sunrise">skip</button>
+<!-- STAGE 2: GARDEN — plant 3 roses -->
+<div class="stage" id="stage-2">
+  <div class="garden-light"></div>
+  <p class="stage-prompt" id="prompt-s2">plant three.</p>
+  <div class="garden-ground"></div>
+  <div class="rose-row" id="rose-row"></div>
+</div>
+
+<!-- STAGE 3: AUTUMN — catch falling leaves -->
+<div class="stage" id="stage-3">
+  <p class="stage-prompt" id="prompt-s3">catch what falls.</p>
+  <div class="leaf-msg" id="leaf-msg"></div>
+</div>
+
+<!-- STAGE 4: MONACO — light the harbor -->
+<div class="stage" id="stage-4">
+  <p class="stage-prompt" id="prompt-s4">light the way.</p>
+  <div class="harbor" id="harbor"></div>
+</div>
+
+<!-- STAGE 5: REVEAL — typewriter message, click to continue -->
+<div class="stage" id="stage-5">
+  <div class="sun-high"></div>
+  <div class="message-wrap" id="message-wrap"></div>
+  <div class="continue-hint" id="continue-hint">continue</div>
+  <p class="signature" id="signature">— with love, Umar</p>
+</div>
 
 <div id="announcer" aria-live="polite" class="sr-only"></div>
 
@@ -375,362 +321,486 @@ body {
 (function() {
   'use strict';
 
-  // ============ THE SUNRISE ENGINE ============
-  // The whole site is one scene, one variable: --dawn (0 → 1)
-  // Three hold interactions drive it forward. No counters. No continue buttons.
+  // ============ STAGE MANAGER ============
+  let currentStage = 0;
+  const stages = ['stage-1', 'stage-2', 'stage-3', 'stage-4', 'stage-5'];
+  const prompts = {
+    0: { show: null, fade: 'prompt-s1', next: 'prompt-s2' },
+    1: { show: 'prompt-s2', fade: null, next: 'prompt-s3' },
+    2: { show: 'prompt-s3', fade: null, next: 'prompt-s4' },
+    3: { show: 'prompt-s4', fade: null, next: null }
+  };
+  let stageInitialised = [false, false, false, false, false];
 
-  const root = document.documentElement;
-  let dawn = 0;
-  let stage = 0; // 0=night, 1=warming, 2=roses, 3=final
-  let isHolding = false;
-  let holdStart = 0;
-  let holdFromDawn = 0;
-  let audioCtx = null;
-  let grooveStarted = false;
-  const STAGE_TARGETS = [0, 0.35, 0.65, 1.0];
-
-  function setDawn(v) {
-    dawn = Math.max(0, Math.min(1, v));
-    root.style.setProperty('--dawn', dawn);
-    // Trigger rose bloom
-    document.querySelectorAll('.horizon-rose').forEach(rose => {
-      const start = parseFloat(rose.style.getPropertyValue('--start-dawn'));
-      if (dawn >= start + 0.05) {
-        rose.classList.add('bloomed');
-      }
-    });
-    // Stage transitions
-    checkStage();
-  }
-
-  function checkStage() {
-    // Stage 0 → 1: dawn reaches stage 1 target, show "hold." if not already
-    if (stage === 0 && dawn >= 0.05) {
-      stage = 1;
-      showPrompt('prompt-hold');
-      announce('Hold to let the light in');
-    }
-    // Stage 1 → 2: dawn reaches stage 2 target, "hold." fades, "again." appears
-    if (stage === 1 && dawn >= 0.35) {
-      stage = 2;
-      fadePrompt('prompt-hold');
-      setTimeout(() => showPrompt('prompt-again'), 800);
-      announce('Wake the roses');
-    }
-    // Stage 2 → 3: dawn reaches stage 3 target, "again." fades, final reveal
-    if (stage === 2 && dawn >= 0.65) {
-      stage = 3;
-      fadePrompt('prompt-again');
-      setTimeout(() => {
-        document.getElementById('message-container').classList.add('show');
-        announce('Message revealed');
-      }, 1000);
-      if (!grooveStarted) {
-        grooveStarted = true;
-        startBasslineFade();
-      }
+  function goToStage(idx) {
+    if (idx === currentStage) return;
+    const prev = document.getElementById(stages[currentStage]);
+    const next = document.getElementById(stages[idx]);
+    if (prev) prev.classList.remove('active');
+    if (next) next.classList.add('active');
+    document.getElementById('announcer').textContent = 'Stage ' + (idx + 1);
+    currentStage = idx;
+    if (!stageInitialised[idx]) {
+      stageInitialised[idx] = true;
+      if (idx === 0) initStage1();
+      if (idx === 1) initStage2();
+      if (idx === 2) initStage3();
+      if (idx === 3) initStage4();
+      if (idx === 4) initStage5();
     }
   }
 
   function showPrompt(id) {
     const el = document.getElementById(id);
-    el.classList.remove('fade-out');
+    if (!el) return;
+    el.classList.remove('fade');
     el.classList.add('show');
   }
   function fadePrompt(id) {
     const el = document.getElementById(id);
+    if (!el) return;
     el.classList.remove('show');
-    el.classList.add('fade-out');
-  }
-  function announce(msg) {
-    const a = document.getElementById('announcer');
-    a.textContent = msg;
+    el.classList.add('fade');
   }
 
-  // ============ HOLD INTERACTION ============
-  function onHoldStart(e) {
-    if (e) e.preventDefault();
-    if (stage >= 3) return;
-    isHolding = true;
-    holdStart = performance.now();
-    holdFromDawn = dawn;
-    tick();
-  }
-  function onHoldEnd(e) {
-    if (e) e.preventDefault();
-    isHolding = false;
-  }
-  function tick() {
-    if (!isHolding) return;
-    const elapsed = (performance.now() - holdStart) / 1000;
-    // Rise rate: 0.15 per second of holding
-    const rise = elapsed * 0.15;
-    const target = holdFromDawn + rise;
-    const stageCeiling = STAGE_TARGETS[stage] || 1.0;
-    setDawn(Math.min(target, stageCeiling));
-    if (dawn < stageCeiling) {
-      requestAnimationFrame(tick);
-    } else {
-      isHolding = false;
-    }
+  // ============ STAGE 1: DAWN — hold to raise --dawn ============
+  let dawn = 0;
+  let isHolding = false;
+  let holdStart = 0;
+  let holdFromDawn = 0;
+  let s1Done = false;
+  const root = document.documentElement;
+
+  function setDawn(v) {
+    dawn = Math.max(0, Math.min(1, v));
+    root.style.setProperty('--dawn', dawn);
   }
 
-  // ============ STARS (procedural) ============
-  (function generateStars() {
-    const container = document.getElementById('stars');
-    const count = 110;
-    for (let i = 0; i < count; i++) {
+  function initStage1() {
+    // Stars
+    const container = document.getElementById('stars-s1');
+    for (let i = 0; i < 100; i++) {
       const s = document.createElement('div');
       s.className = 'star';
       s.style.left = Math.random() * 100 + '%';
-      s.style.top = (Math.random() * 60) + '%';
-      const size = 0.6 + Math.random() * 1.8;
+      s.style.top = (Math.random() * 55) + '%';
+      const size = 0.6 + Math.random() * 1.6;
       s.style.width = size + 'px';
       s.style.height = size + 'px';
       s.style.opacity = 0.25 + Math.random() * 0.7;
       container.appendChild(s);
     }
-  })();
-
-  // ============ JAGUAR CONSTELLATION ============
-  // Faint points connected by lines, forming a jaguar silhouette in the upper sky.
-  (function generateConstellation() {
-    const container = document.getElementById('constellation');
-    // Jaguar points (in % of viewport, upper portion)
-    const points = [
-      { x: 18, y: 22 }, // nose tip
-      { x: 22, y: 18 }, // ear
-      { x: 28, y: 20 }, // ear
-      { x: 32, y: 24 }, // forehead
-      { x: 38, y: 28 }, // shoulder
-      { x: 44, y: 32 }, // back
-      { x: 48, y: 38 }, // hind
-      { x: 44, y: 44 }, // rear leg
-      { x: 36, y: 42 }, // belly
-      { x: 28, y: 40 }, // chest
-      { x: 24, y: 36 }, // front leg
-      { x: 20, y: 32 }, // front leg
+    // Jaguar constellation
+    const c = document.getElementById('constellation-s1');
+    const pts = [
+      { x: 16, y: 24 }, { x: 21, y: 20 }, { x: 27, y: 22 }, { x: 32, y: 26 },
+      { x: 37, y: 30 }, { x: 43, y: 34 }, { x: 46, y: 40 }, { x: 42, y: 44 },
+      { x: 34, y: 42 }, { x: 27, y: 40 }, { x: 23, y: 36 }, { x: 19, y: 32 }
     ];
-    // Lines between consecutive points + eyes
-    const lines = [
-      [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7],
-      [7, 8], [8, 9], [9, 10], [10, 11], [11, 0],
-      // Eyes (inner face)
-      [0, 12], [12, 13]
-    ];
-    // Eye positions
-    const eyes = [{ x: 20, y: 26 }, { x: 26, y: 26 }];
+    const lines = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],[10,11],[11,0],[0,12],[12,13]];
+    const eyes = [{ x: 20, y: 28 }, { x: 26, y: 28 }];
     let svg = '<svg viewBox="0 0 100 100" preserveAspectRatio="none">';
-    // Lines
     lines.forEach(([a, b]) => {
-      const pa = a < 12 ? points[a] : eyes[a - 12];
-      const pb = b < 12 ? points[b] : eyes[b - 12];
-      svg += '<line class="star-line" x1="' + pa.x + '" y1="' + pa.y + '" x2="' + pb.x + '" y2="' + pb.y + '"/>';
+      const pa = a < 12 ? pts[a] : eyes[a - 12];
+      const pb = b < 12 ? pts[b] : eyes[b - 12];
+      svg += '<line class="ln" x1="' + pa.x + '" y1="' + pa.y + '" x2="' + pb.x + '" y2="' + pb.y + '"/>';
     });
-    // Points
-    points.forEach(p => {
-      svg += '<circle class="star-dot" cx="' + p.x + '" cy="' + p.y + '" r="0.4"/>';
-    });
-    // Eyes (brighter)
-    eyes.forEach(p => {
-      svg += '<circle class="star-dot" cx="' + p.x + '" cy="' + p.y + '" r="0.5" opacity="0.9"/>';
-    });
+    pts.forEach(p => { svg += '<circle class="pt" cx="' + p.x + '" cy="' + p.y + '" r="0.35"/>'; });
+    eyes.forEach(p => { svg += '<circle class="pt" cx="' + p.x + '" cy="' + p.y + '" r="0.5" opacity="0.9"/>'; });
     svg += '</svg>';
-    container.innerHTML = svg;
-  })();
-
-  // ============ HORIZON ROSES (simple bezier petals) ============
-  function buildRosePath(k, scale) {
-    const cx = 50, cy = 50;
-    const petals = [];
-    for (let i = 0; i < k; i++) {
-      const angle = (i / k) * Math.PI * 2 - Math.PI / 2;
-      const tipX = cx + Math.cos(angle) * scale;
-      const tipY = cy + Math.sin(angle) * scale;
-      const cpDist = scale * 0.6;
-      const perp = angle + Math.PI / 2;
-      const cp1X = cx + Math.cos(angle) * scale * 0.4 + Math.cos(perp) * cpDist * 0.7;
-      const cp1Y = cy + Math.sin(angle) * scale * 0.4 + Math.sin(perp) * cpDist * 0.7;
-      const cp2X = cx + Math.cos(angle) * scale * 0.4 - Math.cos(perp) * cpDist * 0.7;
-      const cp2Y = cy + Math.sin(angle) * scale * 0.4 - Math.sin(perp) * cpDist * 0.7;
-      petals.push('M' + cx + ',' + cy +
-        ' Q' + cp1X.toFixed(1) + ',' + cp1Y.toFixed(1) + ' ' + tipX.toFixed(1) + ',' + tipY.toFixed(1) +
-        ' Q' + cp2X.toFixed(1) + ',' + cp2Y.toFixed(1) + ' ' + cx + ',' + cy + ' Z');
-    }
-    return petals.join(' ');
+    c.innerHTML = svg;
+    // Show "hold." after name settles
+    setTimeout(() => { if (currentStage === 0) showPrompt('prompt-s1'); }, 2200);
   }
 
-  (function generateRoses() {
-    const container = document.getElementById('horizon-roses');
-    const positions = [
-      { x: 12,  scale: 28, k: 5, start: 0.20 },
-      { x: 25,  scale: 34, k: 4, start: 0.28 },
-      { x: 38,  scale: 30, k: 6, start: 0.35 },
-      { x: 50,  scale: 40, k: 5, start: 0.42 },
-      { x: 62,  scale: 30, k: 4, start: 0.50 },
-      { x: 75,  scale: 34, k: 5, start: 0.58 },
-      { x: 88,  scale: 28, k: 6, start: 0.65 }
+  function s1HoldStart() {
+    if (s1Done) return;
+    isHolding = true;
+    holdStart = performance.now();
+    holdFromDawn = dawn;
+    s1Tick();
+  }
+  function s1HoldEnd() { isHolding = false; }
+  function s1Tick() {
+    if (!isHolding) return;
+    const elapsed = (performance.now() - holdStart) / 1000;
+    const target = holdFromDawn + elapsed * 0.12;
+    setDawn(Math.min(target, 1.0));
+    if (dawn < 1.0) requestAnimationFrame(s1Tick);
+    else { isHolding = false; completeStage1(); }
+  }
+  function completeStage1() {
+    if (s1Done) return;
+    s1Done = true;
+    fadePrompt('prompt-s1');
+    setTimeout(() => goToStage(1), 1800);
+  }
+
+  // ============ STAGE 2: GARDEN — plant 3 roses ============
+  let s2Planted = 0;
+  const s2Total = 3;
+  let s2Done = false;
+
+  function buildRoseSVG() {
+    return '<svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">' +
+      // Bud (initially visible)
+      '<g class="rose-bud">' +
+        '<path d="M50 200 L50 100" stroke="#6e7d54" stroke-width="3" fill="none"/>' +
+        '<ellipse cx="38" cy="130" rx="8" ry="5" fill="#6e7d54" transform="rotate(-30 38 130)"/>' +
+        '<ellipse cx="62" cy="145" rx="8" ry="5" fill="#7a8b5e" transform="rotate(30 62 145)"/>' +
+        '<ellipse cx="50" cy="80" rx="14" ry="20" fill="#9b2d4e" opacity="0.85"/>' +
+        '<path d="M50 60 Q42 70 50 80 Q58 70 50 60" fill="#b5546e"/>' +
+      '</g>' +
+      // Blooms (initially hidden, grow when planted)
+      '<g class="rose-blooms">' +
+        '<path d="M50 200 L50 110" stroke="#6e7d54" stroke-width="2.5" fill="none"/>' +
+        '<ellipse cx="36" cy="140" rx="8" ry="4" fill="#6e7d54" transform="rotate(-30 36 140)"/>' +
+        '<ellipse cx="64" cy="155" rx="8" ry="4" fill="#7a8b5e" transform="rotate(30 64 155)"/>' +
+        '<ellipse cx="50" cy="75" rx="22" ry="20" fill="#9b2d4e" opacity="0.75"/>' +
+        '<ellipse cx="42" cy="68" rx="15" ry="13" fill="#b5546e" opacity="0.85"/>' +
+        '<ellipse cx="58" cy="72" rx="14" ry="12" fill="#b5546e" opacity="0.85"/>' +
+        '<ellipse cx="50" cy="70" rx="9" ry="8" fill="#e08a7d"/>' +
+        '<circle cx="50" cy="70" r="3" fill="#5e2347"/>' +
+      '</g>' +
+    '</svg>';
+  }
+
+  function initStage2() {
+    const row = document.getElementById('rose-row');
+    for (let i = 0; i < s2Total; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'rose-slot';
+      slot.innerHTML = buildRoseSVG() + '<span class="rose-hint">plant</span>';
+      slot.addEventListener('click', function() { plantRose(slot); });
+      row.appendChild(slot);
+    }
+    setTimeout(() => { if (currentStage === 1) showPrompt('prompt-s2'); }, 1200);
+  }
+
+  function plantRose(slot) {
+    if (slot.classList.contains('planted')) return;
+    slot.classList.add('planted');
+    s2Planted++;
+    if (s2Planted >= s2Total && !s2Done) {
+      s2Done = true;
+      fadePrompt('prompt-s2');
+      setTimeout(() => goToStage(2), 2500);
+    }
+  }
+
+  // ============ STAGE 3: AUTUMN — catch leaves ============
+  let s3Caught = 0;
+  const s3Total = 6;
+  let s3Done = false;
+  const s3Msgs = [
+    'May your roots go deep and your branches reach fearless toward the light.',
+    'The sweetest victories are the ones you fought for.',
+    'Autumn teaches us that letting go can be breathtakingly beautiful.',
+    'Stay sharp, stay soft — the world needs both of you.',
+    'Every ending is a threshold. Step through.',
+    'You were made for more than surviving. You were made for blooming.'
+  ];
+  const s3Colors = ['#c4651a', '#a85a25', '#b85520', '#d4742a', '#8a4525', '#cc7028'];
+
+  function s3LeafSVG(color) {
+    return '<svg viewBox="0 0 36 36">' +
+      '<path d="M18 4 Q28 8 30 18 Q28 28 18 32 Q8 28 6 18 Q8 8 18 4 Z" fill="' + color + '" opacity="0.9"/>' +
+      '<path d="M18 6 L18 30" stroke="rgba(0,0,0,0.2)" stroke-width="1" fill="none"/>' +
+      '<path d="M18 12 L12 8 M18 12 L24 8 M18 20 L10 16 M18 20 L26 16" stroke="rgba(0,0,0,0.15)" stroke-width="0.5" fill="none"/>' +
+      '</svg>';
+  }
+
+  function s3SpawnLeaf() {
+    if (s3Done || currentStage !== 2) return;
+    const stage3 = document.getElementById('stage-3');
+    const leaf = document.createElement('div');
+    leaf.className = 'leaf';
+    leaf.style.left = (10 + Math.random() * 80) + '%';
+    leaf.style.top = '-50px';
+    leaf.style.animationDuration = (5 + Math.random() * 3) + 's';
+    leaf.innerHTML = s3LeafSVG(s3Colors[s3Caught % s3Colors.length]);
+    leaf.addEventListener('click', function() { s3CatchLeaf(leaf); });
+    stage3.appendChild(leaf);
+    setTimeout(() => { if (leaf.parentNode) leaf.remove(); }, 10000);
+  }
+
+  function s3CatchLeaf(leaf) {
+    if (leaf.classList.contains('caught')) return;
+    leaf.classList.add('caught');
+    const msgEl = document.getElementById('leaf-msg');
+    msgEl.textContent = s3Msgs[s3Caught];
+    msgEl.classList.remove('show');
+    void msgEl.offsetWidth;
+    msgEl.classList.add('show');
+    setTimeout(() => leaf.remove(), 600);
+    s3Caught++;
+    if (s3Caught >= s3Total && !s3Done) {
+      s3Done = true;
+      fadePrompt('prompt-s3');
+      setTimeout(() => goToStage(3), 2000);
+    }
+  }
+
+  function initStage3() {
+    showPrompt('prompt-s3');
+    // Spawn leaves on a slow interval
+    function tick() {
+      if (s3Done || currentStage !== 2) return;
+      if (s3Caught < s3Total) s3SpawnLeaf();
+      setTimeout(tick, 2200);
+    }
+    tick();
+  }
+
+  // ============ STAGE 4: MONACO — light the harbor ============
+  let s4Lit = 0;
+  const s4Total = 6;
+  let s4Done = false;
+
+  function s4HarborSVG() {
+    // 6 light targets: buildings along the harbor
+    const targets = [
+      { x: 50, y: 80, w: 18, h: 50, id: 't1' },
+      { x: 85, y: 70, w: 16, h: 60, id: 't2' },
+      { x: 120, y: 60, w: 20, h: 70, id: 't3' },
+      { x: 160, y: 75, w: 16, h: 55, id: 't4' },
+      { x: 200, y: 50, w: 22, h: 80, id: 't5' },
+      { x: 240, y: 65, w: 18, h: 65, id: 't6' }
     ];
-    positions.forEach(p => {
-      const wrap = document.createElement('div');
-      wrap.className = 'horizon-rose';
-      wrap.style.left = p.x + '%';
-      wrap.style.setProperty('--start-dawn', p.start);
-      const path = buildRosePath(p.k, p.scale);
-      const approxLen = p.scale * p.k * 4;
-      wrap.style.setProperty('--len', approxLen);
-      wrap.innerHTML = '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">' +
-        '<path class="rose-path" d="' + path + '"/>' +
-        '<circle class="rose-center" cx="50" cy="50" r="3"/>' +
-        '</svg>';
-      container.appendChild(wrap);
+    let svg = '<svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">';
+    // Water line
+    svg += '<rect x="0" y="130" width="300" height="20" fill="rgba(80, 50, 30, 0.3)"/>';
+    // Building silhouettes
+    targets.forEach(t => {
+      svg += '<rect class="light-target" data-id="' + t.id + '" x="' + t.x + '" y="' + t.y + '" width="' + t.w + '" height="' + t.h + '" fill="rgba(60, 40, 50, 0.6)" stroke="rgba(255, 220, 180, 0.3)" stroke-width="0.5"/>';
     });
-  })();
-
-  // ============ PAGE LOAD CHOREOGRAPHY ============
-  // Night sky → stars → "Sev" blurs in → "hold." fades in
-  // CSS handles the name animation; we trigger the prompt after a delay.
-  setTimeout(function() {
-    if (stage === 0) {
-      stage = 1;
-      showPrompt('prompt-hold');
-      announce('Hold to let the light in');
-    }
-  }, 2200);
-
-  // ============ SKIP BUTTON ============
-  // Appears after 5s, lets users jump to full dawn
-  setTimeout(function() {
-    document.getElementById('skip-btn').classList.add('show');
-  }, 5000);
-  function skipToFull() {
-    // Animate --dawn to 1 over 3s, trigger all stage transitions
-    const startDawn = dawn;
-    const startTime = performance.now();
-    const duration = 3000;
-    function skipTick() {
-      const t = (performance.now() - startTime) / duration;
-      if (t >= 1) {
-        setDawn(1);
-        return;
-      }
-      // Ease-out cubic
-      const eased = 1 - Math.pow(1 - t, 3);
-      setDawn(startDawn + (1 - startDawn) * eased);
-      requestAnimationFrame(skipTick);
-    }
-    // Unlock audio
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    skipTick();
+    // Sun
+    svg += '<circle cx="220" cy="40" r="12" fill="rgba(255, 230, 180, 0.7)"/>';
+    svg += '</svg>';
+    return svg;
   }
-  document.getElementById('skip-btn').addEventListener('click', skipToFull);
 
-  // ============ INPUT BINDINGS ============
-  // Mouse
-  document.addEventListener('mousedown', onHoldStart);
-  document.addEventListener('mouseup', onHoldEnd);
-  document.addEventListener('mouseleave', onHoldEnd);
-  // Touch
-  document.addEventListener('touchstart', onHoldStart, { passive: false });
-  document.addEventListener('touchend', onHoldEnd);
-  document.addEventListener('touchcancel', onHoldEnd);
-  // Keyboard (Space/Enter to hold)
-  let keyHeld = false;
-  document.addEventListener('keydown', (e) => {
-    if ((e.code === 'Space' || e.code === 'Enter') && !keyHeld) {
-      e.preventDefault();
-      keyHeld = true;
-      onHoldStart();
-    }
-  });
-  document.addEventListener('keyup', (e) => {
-    if (e.code === 'Space' || e.code === 'Enter') {
-      keyHeld = false;
-      onHoldEnd();
-    }
-  });
+  function initStage4() {
+    const harbor = document.getElementById('harbor');
+    harbor.innerHTML = s4HarborSVG();
+    const lights = harbor.querySelectorAll('.light-target');
+    lights.forEach(light => {
+      light.addEventListener('click', function() { s4Light(light); });
+    });
+    setTimeout(() => { if (currentStage === 3) showPrompt('prompt-s4'); }, 1000);
+  }
 
-  // ============ AUDIO: bassline fade-in (disco groove) ============
-  function startBasslineFade() {
+  function s4Light(light) {
+    if (light.classList.contains('lit')) return;
+    light.classList.add('lit');
+    s4Lit++;
+    if (s4Lit >= s4Total && !s4Done) {
+      s4Done = true;
+      fadePrompt('prompt-s4');
+      setTimeout(() => goToStage(4), 2500);
+    }
+  }
+
+  // ============ STAGE 5: REVEAL — typewriter with click-to-continue ============
+  const paragraphs = [
+    "Some journeys are measured in miles, but yours has been measured in sleepless nights, silent prayers, moments of doubt, and the quiet determination to keep going when giving up would have been easier.",
+    "Today, as you stand at this beautiful crossroads, you're not simply celebrating the end of an academic chapter; you're honoring every version of yourself that chose to believe there was something worth fighting for on the other side. Every lesson learned, every obstacle overcome, every tear hidden behind a smile has become part of the story that brought you here.",
+    "May you always remember that graduation is not the destination but a doorway. Beyond it lies a world waiting to be touched by your ideas, your kindness, your ambition, and your resilience. May your dreams grow larger than your fears, your faith stronger than your doubts, and your heart remain humble no matter how high you rise.",
+    "As one season gently closes, another unfolds with endless possibilities. May you walk into it with confidence, knowing that the same strength that carried you this far will carry you even further.",
+    "Congratulations on your graduation. May your future be as bright as the hope you carry today, as limitless as the sky above you, and as extraordinary as the story you're only just beginning to write."
+  ];
+
+  let s5Index = 0;
+  let s5CharIndex = 0;
+  let s5Typing = false;
+  let s5Done = false;
+  let s5TypeInterval = null;
+  let audioCtx = null;
+  let grooveStarted = false;
+
+  function initStage5() {
+    // Build paragraph elements
+    const wrap = document.getElementById('message-wrap');
+    wrap.innerHTML = '';
+    paragraphs.forEach((_, i) => {
+      const p = document.createElement('p');
+      p.className = 'message-p';
+      p.id = 'msg-p-' + i;
+      wrap.appendChild(p);
+    });
+    // Show continue hint
+    const hint = document.getElementById('continue-hint');
+    hint.classList.add('show');
+    // Start typewriter
+    setTimeout(() => startTypingParagraph(0), 800);
+  }
+
+  function startTypingParagraph(idx) {
+    if (idx >= paragraphs.length) {
+      showSignature();
+      return;
+    }
+    s5Index = idx;
+    s5CharIndex = 0;
+    s5Typing = true;
+    const p = document.getElementById('msg-p-' + idx);
+    p.innerHTML = '<span class="cursor"></span>';
+    typeNextChar();
+  }
+
+  function typeNextChar() {
+    if (!s5Typing || s5Index >= paragraphs.length) return;
+    const p = document.getElementById('msg-p-' + s5Index);
+    const text = paragraphs[s5Index];
+    if (s5CharIndex >= text.length) {
+      s5Typing = false;
+      // Remove cursor, show continue hint
+      p.innerHTML = text;
+      if (s5Index < paragraphs.length - 1) {
+        document.getElementById('continue-hint').classList.add('show');
+      } else {
+        showSignature();
+      }
+      return;
+    }
+    // Start bassline on first paragraph
+    if (s5Index === 0 && s5CharIndex === 0 && !grooveStarted) {
+      startBassline();
+    }
+    const displayed = text.substring(0, s5CharIndex + 1);
+    p.innerHTML = displayed + '<span class="cursor"></span>';
+    s5CharIndex++;
+    s5TypeInterval = setTimeout(typeNextChar, 28);
+  }
+
+  function showSignature() {
+    document.getElementById('continue-hint').classList.remove('show');
+    setTimeout(() => {
+      document.getElementById('signature').classList.add('show');
+    }, 1500);
+  }
+
+  // Click/press to advance
+  function s5Advance() {
+    if (currentStage !== 4) return;
+    // If currently typing, speed up (finish paragraph)
+    if (s5Typing) {
+      clearTimeout(s5TypeInterval);
+      s5Typing = false;
+      const p = document.getElementById('msg-p-' + s5Index);
+      p.innerHTML = paragraphs[s5Index];
+      if (s5Index < paragraphs.length - 1) {
+        document.getElementById('continue-hint').classList.add('show');
+      } else {
+        showSignature();
+      }
+      return;
+    }
+    // If waiting for continue, advance to next paragraph
+    if (s5Index < paragraphs.length - 1) {
+      document.getElementById('continue-hint').classList.remove('show');
+      setTimeout(() => startTypingParagraph(s5Index + 1), 400);
+    }
+  }
+
+  // ============ AUDIO: bassline fade-in ============
+  function startBassline() {
+    if (grooveStarted) return;
+    grooveStarted = true;
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const ctx = audioCtx;
     if (ctx.state === 'suspended') ctx.resume();
-    const bpm = 116;
+    const bpm = 112;
     const beat = 60 / bpm;
-    const bars = 8;
+    const bars = 12;
+    const master = ctx.createGain();
+    master.gain.value = 0;
+    master.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 4);
+    master.connect(ctx.destination);
     const bassPattern = [
-      { note: 65.41, time: 0 },
-      { note: 65.41, time: beat * 0.5 },
-      { note: 49.00, time: beat * 1 },
-      { note: 65.41, time: beat * 1.5 },
-      { note: 77.78, time: beat * 2 },
-      { note: 65.41, time: beat * 2.5 },
-      { note: 49.00, time: beat * 3 },
-      { note: 58.27, time: beat * 3.5 }
+      { n: 65.41, t: 0 }, { n: 65.41, t: beat * 0.5 },
+      { n: 49.00, t: beat * 1 }, { n: 65.41, t: beat * 1.5 },
+      { n: 77.78, t: beat * 2 }, { n: 65.41, t: beat * 2.5 },
+      { n: 49.00, t: beat * 3 }, { n: 58.27, t: beat * 3.5 }
     ];
-    const masterGain = ctx.createGain();
-    masterGain.gain.value = 0; // start muted
-    masterGain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 3.5); // fade in over 3.5s
-    masterGain.connect(ctx.destination);
     const now = ctx.currentTime + 0.3;
     for (let bar = 0; bar < bars; bar++) {
-      const barStart = now + bar * beat * 4;
-      bassPattern.forEach(function(bp) {
-        var osc = ctx.createOscillator();
-        var gain = ctx.createGain();
-        var t = barStart + bp.time;
-        osc.type = 'sawtooth';
-        osc.frequency.value = bp.note;
-        var filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 600;
-        filter.Q.value = 8;
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.15, t + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + beat * 0.4);
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(masterGain);
-        osc.start(t);
-        osc.stop(t + beat * 0.5);
+      const start = now + bar * beat * 4;
+      bassPattern.forEach(bp => {
+        const t = start + bp.t;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sawtooth'; osc.frequency.value = bp.n;
+        const f = ctx.createBiquadFilter();
+        f.type = 'lowpass'; f.frequency.value = 600; f.Q.value = 8;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.15, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, t + beat * 0.4);
+        osc.connect(f); f.connect(g); g.connect(master);
+        osc.start(t); osc.stop(t + beat * 0.5);
       });
-      // Hi-hats
-      for (var h = 0; h < 8; h++) {
-        var t = barStart + h * beat * 0.5 + beat * 0.25;
-        var noise = ctx.createBufferSource();
-        var buf = ctx.createBuffer(1, 2048, ctx.sampleRate);
-        var data = buf.getChannelData(0);
-        for (var ii = 0; ii < 2048; ii++) data[ii] = Math.random() * 2 - 1;
+      for (let h = 0; h < 8; h++) {
+        const t = start + h * beat * 0.5 + beat * 0.25;
+        const noise = ctx.createBufferSource();
+        const buf = ctx.createBuffer(1, 2048, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < 2048; i++) d[i] = Math.random() * 2 - 1;
         noise.buffer = buf;
-        var hpf = ctx.createBiquadFilter();
-        hpf.type = 'highpass';
-        hpf.frequency.value = 8000;
-        var hgain = ctx.createGain();
-        hgain.gain.setValueAtTime(0.03, t);
+        const hpf = ctx.createBiquadFilter();
+        hpf.type = 'highpass'; hpf.frequency.value = 8000;
+        const hgain = ctx.createGain();
+        hgain.gain.setValueAtTime(0.025, t);
         hgain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-        noise.connect(hpf);
-        hpf.connect(hgain);
-        hgain.connect(masterGain);
-        noise.start(t);
-        noise.stop(t + 0.05);
+        noise.connect(hpf); hpf.connect(hgain); hgain.connect(master);
+        noise.start(t); noise.stop(t + 0.05);
       }
-      // Kick
-      [0, 2].forEach(function(beatNum) {
-        var t = barStart + beatNum * beat;
-        var osc = ctx.createOscillator();
-        var gain = ctx.createGain();
+      [0, 2].forEach(bn => {
+        const t = start + bn * beat;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
         osc.frequency.setValueAtTime(150, t);
         osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
-        gain.gain.setValueAtTime(0.2, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-        osc.connect(gain);
-        gain.connect(masterGain);
-        osc.start(t);
-        osc.stop(t + 0.15);
+        g.gain.setValueAtTime(0.18, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        osc.connect(g); g.connect(master);
+        osc.start(t); osc.stop(t + 0.15);
       });
     }
   }
+
+  // ============ INPUT ============
+  // Stage 1: hold to raise dawn
+  document.addEventListener('mousedown', function() {
+    if (currentStage === 0) s1HoldStart();
+    if (currentStage === 4) s5Advance();
+  });
+  document.addEventListener('mouseup', function() {
+    if (currentStage === 0) s1HoldEnd();
+  });
+  document.addEventListener('touchstart', function(e) {
+    if (currentStage === 0) s1HoldStart();
+    if (currentStage === 4) s5Advance();
+  }, { passive: true });
+  document.addEventListener('touchend', function() {
+    if (currentStage === 0) s1HoldEnd();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      e.preventDefault();
+      if (currentStage === 0) s1HoldStart();
+      if (currentStage === 4) s5Advance();
+    }
+  });
+  document.addEventListener('keyup', function(e) {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      if (currentStage === 0) s1HoldEnd();
+    }
+  });
+
+  // ============ INIT ============
+  // Stage 1 is the initial stage — init it
+  stageInitialised[0] = true;
+  initStage1();
 })();
 </script>
 </body>
