@@ -254,13 +254,25 @@ body {
   filter: sepia(0.4) saturate(1.6) hue-rotate(-14deg) brightness(0.95) drop-shadow(0 0 28px rgba(200, 90, 120, 0.25));
   opacity: 0.92;
   transform-origin: bottom right;
-  animation: treeBreeze 6s ease-in-out infinite;
+  animation: treeBreeze 5s ease-in-out infinite;
 }
 @keyframes treeBreeze {
-  0%, 100% { transform: rotate(0deg) skewX(0deg) scale(1); }
-  20% { transform: rotate(0.5deg) skewX(0.7deg) scale(1.004); }
-  50% { transform: rotate(-0.2deg) skewX(-0.4deg) scale(1.008); }
-  80% { transform: rotate(-0.5deg) skewX(-0.7deg) scale(1.004); }
+  0%   { transform: rotate(0deg) skewX(0deg) scale(1); }
+  15%  { transform: rotate(0.9deg) skewX(1.2deg) scale(1.006); }
+  35%  { transform: rotate(0.2deg) skewX(0.3deg) scale(1.003); }
+  55%  { transform: rotate(-0.8deg) skewX(-1.1deg) scale(1.009); }
+  78%  { transform: rotate(-0.2deg) skewX(-0.3deg) scale(1.004); }
+  100% { transform: rotate(0deg) skewX(0deg) scale(1); }
+}
+#stage-3 .wind-leaf {
+  position: absolute; width: 40px; height: 40px; z-index: 3; pointer-events: none;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4)); will-change: transform;
+}
+@keyframes windDrift {
+  0%   { transform: translate(0,0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.9; }
+  88%  { opacity: 0.9; }
+  100% { transform: translate(var(--wx), var(--wy)) rotate(var(--wr)); opacity: 0; }
 }
 #stage-3 .autumn-text {
   position: absolute;
@@ -494,7 +506,9 @@ body {
 #stage-5 .scramble-text.show { opacity: 1; }
 #stage-5 .desktop-content {
   display: none; padding: 1.5rem 2rem; max-width: 42ch; margin: 0 auto;
+  max-height: 52vh; overflow-y: auto; scrollbar-width: none;
 }
+#stage-5 .desktop-content::-webkit-scrollbar { display: none; }
 #stage-5 .desktop-content.show { display: block; }
 #stage-5 .crt-base {
   background: linear-gradient(180deg, #1e1e28 0%, #2a2a35 100%);
@@ -619,7 +633,6 @@ body {
     <span class="line emphasis" id="inv-3">Adventure awaits.</span>
     <span class="line instruction" id="inv-4">click and hold.</span>
   </div>
-  <p class="prompt-s1" id="prompt-s1">begin.</p>
 </div>
 
 <!-- STAGE 2: GARDEN -- click anywhere to grow 5 flowers -->
@@ -639,8 +652,6 @@ body {
     <p class="autumn-line-1">Autumn is a nice season, ain't it?</p>
     <p class="autumn-line-2">It just teaches us how to let go. The leaves fall like old versions of us, so the ground can make room for what's next to grow.</p>
   </div>
-  <p class="stage-prompt" id="prompt-s3">catch what falls.</p>
-  <div class="leaf-msg" id="leaf-msg"></div>
 </div>
 
 <!-- STAGE 4: CANDLES — light the path, open the chest, reveal the record player -->
@@ -900,12 +911,7 @@ body {
         document.getElementById('inv-3').style.transition = 'opacity 1s ease, filter 1s ease';
         document.getElementById('inv-3').style.opacity = '0';
         document.getElementById('inv-3').style.filter = 'blur(6px)';
-        // Keep instruction visible + show prompt
-        setTimeout(() => {
-          if (currentStage === 0) {
-            showPrompt('prompt-s1');
-          }
-        }, 400);
+        // "click and hold." instruction stays as the only cue (no separate "begin.")
       }, 3500);
     }, 500);
   }
@@ -933,13 +939,14 @@ body {
     if (s1Done) return;
     s1Done = true;
     fadePrompt('prompt-s1');
-    // Spawn heart particles around the sun
+    // Hearts bloom into a heart over the sun
     startDawnHearts();
-    // Wait 4 seconds for hearts + pause before transitioning
-    setTimeout(() => goToStage(1), 4200);
+    // Let the heart form, then move on
+    setTimeout(() => goToStage(1), 5400);
   }
 
-  // Heart particles rising from below, meeting at the top of the sun
+  // Heart bloom: tiny hearts rise from below the sun, split left & right, sweep up
+  // the two lobes and meet again at the top — tracing a heart over the sun.
   function startDawnHearts() {
     const canvas = document.createElement('canvas');
     canvas.id = 'dawn-hearts';
@@ -947,22 +954,32 @@ body {
     const stage1 = document.getElementById('stage-1');
     stage1.appendChild(canvas);
     const ctx = canvas.getContext('2d');
-    let w, h;
-    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+    let w, h, cx, cy, scale;
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+      cx = w / 2;
+      cy = h / 2 - 14;                  // heart centered over the sun (sun sits at 50% at full dawn)
+      scale = Math.min(w, h) * 0.017;   // responsive heart size
+    }
     resize(); window.addEventListener('resize', resize);
 
-    const heartColors = ['#e8c285', '#d4a87e', '#b8845a', '#f0e8d0', '#c8a868', '#ff4d77'];
+    const heartColors = ['#e8c285', '#f0d9a0', '#ffd1dc', '#ff9eb5', '#ffc06a'];
     const particles = [];
-    const sunX = w / 2;
-    const sunTopY = h / 2 - 180; // top edge of the 360px sun glow at full dawn
-    const targetY = sunTopY - 30; // hearts meet just above the sun
 
-    function drawHeart(ctx, x, y, size) {
+    // point on the BIG heart outline at parameter t (t = PI is the bottom cusp)
+    function heartXY(t) {
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+      return { x: cx + x * scale, y: cy - y * scale };
+    }
+    // small filled heart glyph centered at x,y
+    function drawHeart(x, y, size) {
       const s = size / 16;
       ctx.beginPath();
-      for (let t = 0; t < Math.PI * 2; t += 0.1) {
+      for (let t = 0; t <= Math.PI * 2 + 0.1; t += 0.18) {
         const hx = 16 * Math.pow(Math.sin(t), 3);
-        const hy = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+        const hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
         if (t === 0) ctx.moveTo(x + hx * s, y + hy * s);
         else ctx.lineTo(x + hx * s, y + hy * s);
       }
@@ -971,55 +988,49 @@ body {
 
     let startTime = performance.now();
     let lastSpawn = 0;
-    const spawnInterval = 70;
+    let spawnCount = 0;
+    const spawnInterval = 42;
 
     function animate(now) {
       const elapsed = (now - startTime) / 1000;
-      if (elapsed > 4.5) { canvas.remove(); return; }
+      if (elapsed > 6.2) { canvas.remove(); return; }
       ctx.clearRect(0, 0, w, h);
 
-      // Spawn a fresh heart every spawnInterval (until 3.5s)
-      if (now - lastSpawn > spawnInterval && elapsed < 3.5) {
+      if (now - lastSpawn > spawnInterval && elapsed < 4.6) {
         lastSpawn = now;
+        const side = (spawnCount % 2 === 0) ? 1 : -1;   // alternate left / right lobe
+        spawnCount++;
         particles.push({
-          startX: sunX + (Math.random() - 0.5) * 320,
-          startY: h + 30,
-          size: 4 + Math.random() * 5,
-          color: heartColors[Math.floor(Math.random() * heartColors.length)],
-          duration: 2.0 + Math.random() * 1.2,
+          side: side,
           start: elapsed,
-          wobbleAmp: 10 + Math.random() * 18,
-          wobbleFreq: 1.5 + Math.random() * 1.5,
-          wobblePhase: Math.random() * Math.PI * 2
+          duration: 2.3 + Math.random() * 1.1,
+          size: 4 + Math.random() * 4.5,
+          color: heartColors[Math.floor(Math.random() * heartColors.length)],
+          jitter: (Math.random() - 0.5) * 6
         });
       }
 
-      const fadeAlpha = elapsed < 3.4 ? 1 : Math.max(0, 1 - (elapsed - 3.4) / 1.1);
+      const globalFade = elapsed < 4.6 ? 1 : Math.max(0, 1 - (elapsed - 4.6) / 1.5);
 
       particles.forEach(p => {
-        const pElapsed = elapsed - p.start;
-        if (pElapsed < 0) return;
-        const prog = Math.min(1, pElapsed / p.duration);
-        // ease-out cubic: starts fast, slows toward target
-        const eased = 1 - Math.pow(1 - prog, 3);
+        const pe = elapsed - p.start;
+        if (pe < 0) return;
+        const prog = Math.min(1, pe / p.duration);
+        const eased = 1 - Math.pow(1 - prog, 2.2);          // ease up toward the top
+        // bottom cusp (t=PI) -> up one side -> top dip (t=0 or 2PI) where they meet
+        const t = Math.PI + p.side * eased * Math.PI;
+        const pos = heartXY(t);
 
-        // x converges from startX toward sunX as it rises
-        const x = p.startX + (sunX - p.startX) * eased;
-        const y = p.startY + (targetY - p.startY) * eased;
-        // gentle horizontal wobble that fades as heart reaches target
-        const wobbleX = Math.sin(pElapsed * p.wobbleFreq + p.wobblePhase) * p.wobbleAmp * (1 - eased);
-
-        // alpha: fade in over first 8%, hold, fade out over last 20%
-        let alpha = 0.7;
-        if (prog < 0.08) alpha *= prog / 0.08;
-        if (prog > 0.8) alpha *= (1 - prog) / 0.2;
-        alpha *= fadeAlpha;
+        let alpha = 0.9;
+        if (prog < 0.1) alpha *= prog / 0.1;                // fade in at the bottom
+        if (prog > 0.82) alpha *= (1 - prog) / 0.18;         // soften as they meet at the top
+        alpha *= globalFade;
 
         ctx.globalAlpha = alpha;
         ctx.fillStyle = p.color;
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = 12;
         ctx.shadowColor = p.color;
-        drawHeart(ctx, x + wobbleX, y, p.size);
+        drawHeart(pos.x + p.jitter * (1 - eased), pos.y, p.size);
         ctx.fill();
       });
 
@@ -1242,22 +1253,44 @@ body {
     }
   }
 
+  // Ambient leaf blown across by the wind (decorative, not catchable)
+  function s3WindLeaf() {
+    if (currentStage !== 2) return;
+    const stage3 = document.getElementById('stage-3');
+    const leaf = document.createElement('div');
+    leaf.className = 'wind-leaf';
+    leaf.style.left = '-6%';
+    leaf.style.top = (8 + Math.random() * 58) + '%';
+    leaf.style.setProperty('--wx', (window.innerWidth * 1.18) + 'px');
+    leaf.style.setProperty('--wy', (30 + Math.random() * 130) + 'px');
+    leaf.style.setProperty('--wr', (180 + Math.random() * 360) + 'deg');
+    const dur = 4 + Math.random() * 3;
+    leaf.style.animation = 'windDrift ' + dur.toFixed(2) + 's linear forwards';
+    leaf.innerHTML = s3LeafSVG(s3Colors[Math.floor(Math.random() * s3Colors.length)]);
+    stage3.appendChild(leaf);
+    setTimeout(() => { if (leaf.parentNode) leaf.remove(); }, dur * 1000 + 200);
+  }
+
   function initStage3() {
     setDawn3(0); // sun starts below the horizon
-    showPrompt('prompt-s3');
-    // Show the autumn text after a brief pause
+    s3Done = false;
+    // Reveal the autumn lines
     setTimeout(() => {
       document.getElementById('autumn-text').classList.add('show');
-    }, 1500);
-    // First leaf drops in immediately so user sees something falling
-    setTimeout(s3SpawnLeaf, 400);
-    // Then steady stream
-    function tick() {
-      if (s3Done || currentStage !== 2) return;
-      if (s3Caught < s3Total) s3SpawnLeaf();
-      setTimeout(tick, 1300);
-    }
-    setTimeout(tick, 1800);
+    }, 1400);
+    // Leaves drift past on the breeze
+    setTimeout(s3WindLeaf, 700);
+    (function windTick() {
+      if (currentStage !== 2) return;
+      s3WindLeaf();
+      setTimeout(windTick, 900 + Math.random() * 700);
+    })();
+    // The sun rises on its own; when it crests, the candlelit chapter begins
+    setTimeout(() => {
+      if (currentStage !== 2 || s3Done) return;
+      s3Done = true;
+      tweenDawn3(1, 8000, () => setTimeout(() => goToStage(3), 900));
+    }, 2600);
   }
 
   // ============ STAGE 4: CANDLES — light the path, open the chest ============
@@ -1330,11 +1363,15 @@ body {
 
   // ============ STAGE 5: REVEAL — record player → desktop → typewriter ============
   const paragraphs = [
-    "Some journeys are measured in miles, but yours has been measured in sleepless nights, silent prayers, moments of doubt, and the quiet determination to keep going when giving up would have been easier.",
-    "Today, as you stand at this beautiful crossroads, you're not simply celebrating the end of an academic chapter; you're honoring every version of yourself that chose to believe there was something worth fighting for on the other side. Every lesson learned, every obstacle overcome, every tear hidden behind a smile has become part of the story that brought you here.",
-    "May you always remember that graduation is not the destination but a doorway. Beyond it lies a world waiting to be touched by your ideas, your kindness, your ambition, and your resilience. May your dreams grow larger than your fears, your faith stronger than your doubts, and your heart remain humble no matter how high you rise.",
-    "As one season gently closes, another unfolds with endless possibilities. May you walk into it with confidence, knowing that the same strength that carried you this far will carry you even further.",
-    "Congratulations on your graduation. May your future be as bright as the hope you carry today, as limitless as the sky above you, and as extraordinary as the story you're only just beginning to write."
+    "Some journeys are measured in miles, but yours has been measured in sleepless nights, silent prayers, moments of doubt, and the quiet determination to keep going when giving up would have been easier. It has been measured in the early mornings no one saw, the late nights only your desk lamp witnessed, and the small, stubborn promises you made to yourself when no one was listening. It has been measured in every cup of coffee that kept you company, every page you reread until the words finally made sense, and every time you whispered “just a little more” when your body begged you to rest.",
+    "Today, as you stand at this beautiful crossroads, you are not simply celebrating the end of an academic chapter. You are honoring every version of yourself that chose to believe there was something worth fighting for on the other side. Every lesson learned, every obstacle overcome, every tear hidden behind a smile has become part of the story that brought you here. The shy beginner, the overwhelmed middle, the exhausted but unbroken finisher, they all share in this moment, and they all deserve to be celebrated. You did not just earn a certificate. You earned proof that you are someone who finishes what she starts, even when the finishing line keeps moving.",
+    "And let us not forget those who walked beside you: the family who believed in you before you believed in yourself, the friends who became your second family, the mentors who saw your potential when you couldn’t see it, and the quiet supporters whose prayers carried you through storms you never spoke of. Some held your hand, some held your hope, and some simply held space for you to grow. This achievement is yours, but it shines brighter because of the love that surrounded you on the way.",
+    "It feels almost fitting that you, of all people, chose international relations. The world has always been a little too small for the size of your heart, and now you have the language, the lens, and the credentials to meet it on its own terms. Diplomacy will suit you, because long before any classroom taught you the art of it, life had already trained you in patience, in listening, in finding peace where others only saw problems. The world is about to gain a future diplomat, and somewhere a press secretary is already nervous.",
+    "May you always remember that graduation is not the destination but a doorway. Beyond it lies a world waiting to be touched by your ideas, your kindness, your ambition, and your resilience. May your dreams grow larger than your fears, your faith stronger than your doubts, and your heart remain humble no matter how high you rise. May you never forget where you came from, and may you never stop reaching for where you are meant to go. May your name one day be spoken in rooms you have not yet entered, and may every one of those rooms be better for your presence in it.",
+    "Going forward, may you be brave enough to begin again when life asks you to start over. May you be patient with yourself on the days when progress feels slow, and gentle with your heart when the road grows long. Success will come in many forms, some loud, some quiet, and the truest victories will often be the ones only you know about. Hold on to your integrity, your curiosity, and your kindness, for they will open more doors than any title or accolade ever could. And on the days the world feels heavy, remember that even diplomats are allowed to take off their shoes, sit on the floor, and eat cereal at midnight. Greatness does not require constant composure. It only requires that you keep returning to yourself.",
+    "May you find work that feels like purpose and rest that feels like peace. May the people you meet along the way recognize the gift of knowing you. May you laugh often, love deeply, travel widely, and learn endlessly. May your passport gather stamps, your bookshelves gather stories, and your spirit gather wisdom from every season life places you in. And when you stumble, as we all do, may you fall forward, dust yourself off, and walk on with the same grace that has always been your quiet signature.",
+    "As one season gently closes, another unfolds with endless possibilities. May you walk into it with confidence, knowing that the same strength that carried you this far will carry you even further. The future will test you, surprise you, and stretch you, but it will also reward every ounce of courage you bring to it. There will be days you feel unstoppable and days you feel uncertain, and both will be part of the becoming. Trust the unfolding. Trust the timing. Trust the girl who got you here, because she has never once let you down.",
+    "Congratulations on your graduation. May your future be as bright as the hope you carry today, as limitless as the sky above you, and as extraordinary as the story you are only just beginning to write. The world is lucky to have you stepping into it. Go gently, go boldly, and go knowing that you are deeply, deeply loved."
   ];
 
   let s5Index = 0;
@@ -1525,8 +1562,10 @@ body {
     }
     const displayed = text.substring(0, s5CharIndex + 1);
     p.innerHTML = displayed + '<span class="cursor"></span>';
+    const dc = document.getElementById('desktop-content');
+    if (dc) dc.scrollTop = dc.scrollHeight; // keep the cursor in view as it types
     s5CharIndex++;
-    s5TypeInterval = setTimeout(typeNextChar, 28);
+    s5TypeInterval = setTimeout(typeNextChar, 22);
   }
 
   function showSignature() {
