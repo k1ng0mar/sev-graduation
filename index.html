@@ -121,7 +121,7 @@ body {
 #stage-1 .invitation .line.emphasis {
   font-weight: 400; font-style: normal;
   color: var(--c-gold);
-  text-shadow: 0 0 40px rgba(247,212,155,0.5);
+  text-shadow: 0 0 30px rgba(5, 8, 16, 0.9), 0 0 60px rgba(5, 8, 16, 0.5);
   margin-top: 0.6em; font-size: clamp(1.1rem, 2.5vw, 1.4rem);
 }
 #stage-1 .invitation .line.instruction {
@@ -131,7 +131,7 @@ body {
   opacity: 1;
   letter-spacing: 0.04em;
   font-weight: 300;
-  text-shadow: 0 0 24px rgba(247, 212, 155, 0.7), 0 0 50px rgba(247, 212, 155, 0.35);
+  text-shadow: 0 0 24px rgba(5, 8, 16, 0.85), 0 0 50px rgba(5, 8, 16, 0.4);
 }
 #stage-1 .invitation .line.instruction.show {
   animation: lineIn 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards, holdPulse 2.2s ease-in-out 1.6s infinite;
@@ -270,8 +270,8 @@ body {
   object-fit: contain;
   object-position: bottom right;
   z-index: 2;
-  filter: sepia(0.4) saturate(1.6) hue-rotate(-14deg) brightness(0.95) drop-shadow(0 0 28px rgba(200, 90, 120, 0.25));
-  opacity: 0.92;
+  filter: sepia(0.25) saturate(1.35) hue-rotate(-14deg) brightness(1.2) contrast(1.05) drop-shadow(0 0 50px rgba(247, 204, 176, 0.55)) drop-shadow(0 -3px 18px rgba(0, 0, 0, 0.5));
+  opacity: 1;
   transform-origin: bottom right;
   animation: treeBreeze 5s ease-in-out infinite;
 }
@@ -724,13 +724,14 @@ body {
 /* Unobtrusive skip — keyboard/reduced-motion path so the journey is always completable */
 .skip-btn {
   position: fixed; bottom: 18px; right: 20px; z-index: 100;
-  font-family: 'Equinox', serif; font-style: italic; font-weight: 300;
-  font-size: 0.8rem; letter-spacing: 0.04em;
-  color: var(--c-gold); background: transparent;
-  border: 1px solid rgba(232, 194, 133, 0.3); border-radius: 20px;
-  padding: 6px 16px; cursor: pointer; opacity: 0.35;
+  font-family: 'Equinox', serif; font-style: italic; font-weight: 400;
+  font-size: 0.9rem; letter-spacing: 0.06em;
+  color: var(--c-gold); background: rgba(5, 8, 16, 0.18);
+  border: 1px solid rgba(232, 194, 133, 0.65); border-radius: 20px;
+  padding: 6px 16px; cursor: pointer; opacity: 0.78;
   transition: opacity 0.4s ease, border-color 0.4s ease;
-  text-shadow: 0 0 12px rgba(5, 8, 16, 0.7);
+  text-shadow: 0 0 14px rgba(5, 8, 16, 0.95), 0 0 4px rgba(5, 8, 16, 1);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
 .skip-btn:hover, .skip-btn:focus-visible { opacity: 0.9; border-color: rgba(232, 194, 133, 0.6); }
 .skip-btn.gone { opacity: 0; pointer-events: none; }
@@ -855,8 +856,8 @@ body {
         <circle cx="150" cy="130" r="20" fill="#f3c6d6" stroke="#b5547a" stroke-width="1.2"/>
         <circle cx="150" cy="130" r="3" fill="#b5547a"/>
         <!-- Label text -->
-        <text x="150" y="125" text-anchor="middle" fill="#a9466b" font-size="6" font-family="Fraunces, serif" font-style="italic" opacity="0.85">For Sev</text>
-        <text x="150" y="138" text-anchor="middle" fill="#a9466b" font-size="4" font-family="Inter, sans-serif" opacity="0.6">side a</text>
+        <text x="150" y="126" text-anchor="middle" fill="#a9466b" font-size="7.5" font-family="Fraunces, serif" font-style="italic" opacity="0.95">For Sev</text>
+        <text x="150" y="139" text-anchor="middle" fill="#a9466b" font-size="5" font-family="Inter, sans-serif" opacity="0.75">side a</text>
       </g>
 
       <!-- Tonearm -->
@@ -901,8 +902,8 @@ body {
       <circle cx="60" cy="60" r="26" fill="none" stroke="rgba(243,198,214,0.18)" stroke-width="0.8"/>
       <circle cx="60" cy="60" r="18" fill="#f3c6d6" stroke="#b5547a" stroke-width="1.2"/>
       <circle cx="60" cy="60" r="3" fill="#b5547a"/>
-      <text x="60" y="58" text-anchor="middle" fill="#a9466b" font-size="6" font-family="Fraunces, serif" font-style="italic" opacity="0.85">For Sev</text>
-      <text x="60" y="68" text-anchor="middle" fill="#a9466b" font-size="4.5" font-family="Inter, sans-serif" opacity="0.6">side a</text>
+      <text x="60" y="59" text-anchor="middle" fill="#a9466b" font-size="7" font-family="Fraunces, serif" font-style="italic" opacity="0.95">For Sev</text>
+      <text x="60" y="69" text-anchor="middle" fill="#a9466b" font-size="4.5" font-family="Inter, sans-serif" opacity="0.75">side a</text>
     </svg>
   </div>
   
